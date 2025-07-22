@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpinFun | Mini-Game Madness</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Title with floating emojis -->
+    <h1 class="title">SpinFun
+      <span class="emoji" style="left: 10%; top: -20px;">🎮</span>
+      <span class="emoji" style="right: 15%; top: -30px;">✨</span>
+      <span class="emoji" style="left: 20%; bottom: -40px;">😂</span>
+      <span class="emoji" style="right: 25%; bottom: -20px;">🔥</span>
+    </h1>
+    
+    <p class="subtitle">Only fun people allowed >.<</p>
+    
+    <!-- Game Cards -->
+    <div class="games">
+      <a href="find-the-word.html" class="game-card">
+        <h3>Find the Word 🔍</h3>
+        <p>Can you guess the secret word?</p>
+      </a>
+      
+      <a href="divorce-game.html" class="game-card">
+        <h3>Divorce Game 💔</h3>
+        <p>Satirical split-up simulator</p>
+      </a>
+      
+      <a href="truth-or-dare.html" class="game-card">
+        <h3>Truth or Dare 🎲</h3>
+        <p>Digital version of the classic</p>
+      </a>
+    </div>
+    
+    <!-- Fun FAQ -->
+    <div class="faq">
+      <h2>Fun FAQ</h2>
+      <div class="faq-item">
+        <p class="question">Are your games tested and fun-certified?</p>
+        <p class="answer">Absolutely! 110% approved by a committee of 1 (our cat).</p>
+      </div>
+      <div class="faq-item">
+        <p class="question">Is this site secretly a psychology experiment?</p>
+        <p class="answer">¯\_(ツ)_/¯ Maybe. Play to find out.</p>
+      </div>
+      <div class="faq-item">
+        <p class="question">Can I request a game?</p>
+        <p class="answer">Yes! But only if you bring snacks.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Add more floating emojis randomly
+    document.addEventListener('DOMContentLoaded', () => {
+      const title = document.querySelector('.title');
+      const emojis = ['🎲', '🤪', '🎯', '🍕', '👾', '💥'];
+      
+      for (let i = 0; i < 6; i++) {
+        const emoji = document.createElement('span');
+        emoji.className = 'emoji';
+        emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        emoji.style.left = `${Math.random() * 100}%`;
+        emoji.style.top = `${Math.random() * 100 - 20}%`;
+        title.appendChild(emoji);
+      }
+    });
+  </script>
+</body>
+</html>
