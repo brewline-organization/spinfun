@@ -5,16 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpinFun | Mini-Game Madness</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Add these styles to your existing styles.css or keep them here */
+    .title {
+      position: relative;
+      margin-bottom: 40px;
+    }
+    
+    .emoji-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .emoji {
+      font-size: 1.5rem;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .cat {
+      font-size: 1.2rem;
+      margin-top: 5px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <!-- Title with floating emojis -->
-    <h1 class="title">SpinFun
-      <span class="emoji" style="left: 10%; top: -20px;">🎮</span>
-      <span class="emoji" style="right: 15%; top: -30px;">✨</span>
-      <span class="emoji" style="left: 20%; bottom: -40px;">😂</span>
-      <span class="emoji" style="right: 25%; bottom: -20px;">🔥</span>
-    </h1>
+    <!-- Title with emojis below -->
+    <h1 class="title">SpinFun</h1>
+    <div class="emoji-container" id="emoji-container">
+      <span>🎮</span>
+      <span>✨</span>
+      <span>😂</span>
+      <span>🔥</span>
+    </div>
     
     <p class="subtitle">Only fun people allowed >.<</p>
     
@@ -52,22 +91,31 @@
         <p class="answer">Yes! But only if you bring snacks.</p>
       </div>
     </div>
+    
+    <!-- Footer -->
+    <footer>
+      <p>Made by brewline organization <3</p>
+      <div class="cat">(=^･ω･^=)</div>
+    </footer>
   </div>
 
   <script src="script.js"></script>
   <script>
-    // Add more floating emojis randomly
+    // Add random emojis below the title
     document.addEventListener('DOMContentLoaded', () => {
-      const title = document.querySelector('.title');
-      const emojis = ['🎲', '🤪', '🎯', '🍕', '👾', '💥'];
+      const container = document.getElementById('emoji-container');
+      const emojis = ['🎲', '🤪', '🎯', '🍕', '👾', '💥', '🐱', '🌈', '🎉'];
       
-      for (let i = 0; i < 6; i++) {
+      // Clear default emojis
+      container.innerHTML = '';
+      
+      // Add 8 random emojis with animation delays
+      for (let i = 0; i < 8; i++) {
         const emoji = document.createElement('span');
         emoji.className = 'emoji';
         emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-        emoji.style.left = `${Math.random() * 100}%`;
-        emoji.style.top = `${Math.random() * 100 - 20}%`;
-        title.appendChild(emoji);
+        emoji.style.animationDelay = `${i * 0.2}s`;
+        container.appendChild(emoji);
       }
     });
   </script>
