@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Divorce Game | SpinFun</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .couple-container {
+      display: flex;
+      justify-content: space-around;
+      margin: 30px 0;
+    }
+    
+    .person {
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+      background: #fff9f9;
+      width: 40%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .person img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border: 3px solid #ff6b6b;
+    }
+    
+    .reasons-list {
+      text-align: left;
+      margin: 20px auto;
+      max-width: 500px;
+    }
+    
+    .reason-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .split-btn {
+      background: #ff6b6b;
+      font-size: 1.2rem;
+      padding: 15px 30px;
+    }
+    
+    .split-btn:hover {
+      background: #e05555;
+    }
+    
+    .result {
+      font-size: 1.5rem;
+      margin: 20px 0;
+      min-height: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">← Back to SpinFun</a>
+    
+    <div class="game-container">
+      <h1 class="game-title">Divorce Game 💔</h1>
+      <p>Should they stay together or split up? You decide!</p>
+      
+      <div class="couple-container">
+        <div class="person" id="person1">
+          <img src="https://i.pravatar.cc/150?img=5" alt="Person 1">
+          <h3>Alex</h3>
+          <p>Loves hiking and cats</p>
+        </div>
+        
+        <div class="person" id="person2">
+          <img src="https://i.pravatar.cc/150?img=6" alt="Person 2">
+          <h3>Jordan</h3>
+          <p>Movie buff and chef</p>
+        </div>
+      </div>
+      
+      <div class="reasons-list" id="reasons">
+        <h3>Relationship Issues:</h3>
+        <!-- Reasons will be added by JavaScript -->
+      </div>
+      
+      <div class="result" id="result"></div>
+      
+      <button id="split-btn" class="btn split-btn">Should They Split?</button>
+      <button id="new-couple-btn" class="btn" style="display: none;">New Couple</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Divorce Game Logic
+    const issues = [
+      "Never puts the toilet seat down",
+      "Snoring like a chainsaw",
+      "Secretly hates your mother",
+      "Leaves dirty dishes in the sink",
+      "Has a weird obsession with garden gnomes",
+      "Still texts their ex 'just to check in'",
+      "Refuses to watch your favorite show",
+      "Borrows your clothes without asking",
+      "Says 'we need to talk' at least once a week",
+      "Has a secret Instagram account for their pet rock"
+    ];
+    
+    const positiveTraits = [
+      "Makes you laugh every day",
+      "Always knows how to cheer you up",
+      "Brings you coffee in bed",
+      "Remembers your anniversary",
+      "Supports your dreams",
+      "Is an amazing cook",
+      "Gives the best hugs",
+      "Loves your weird quirks",
+      "Always puts you first",
+      "Makes every day an adventure"
+    ];
+    
+    const splitBtn = document.getElementById('split-btn');
+    const newCoupleBtn = document.getElementById('new-couple-btn');
+    const reasonsList = document.getElementById('reasons');
+    const resultDisplay = document.getElementById('result');
+    
+    function generateCouple() {
+      // Clear previous reasons
+      reasonsList.innerHTML = '<h3>Relationship Issues:</h3>';
+      
+      // Generate 3-5 random issues
+      const numIssues = Math.floor(Math.random() * 3) + 3;
+      const selectedIssues = [];
+      
+      for (let i = 0; i < numIssues; i++) {
+        let issue;
+        do {
+          issue = issues[Math.floor(Math.random() * issues.length)];
+        } while (selectedIssues.includes(issue));
+        
+        selectedIssues.push(issue);
+        
+        const issueElement = document.createElement('div');
+        issueElement.className = 'reason-item';
+        issueElement.textContent = `💢 ${issue}`;
+        reasonsList.appendChild(issueElement);
+      }
+      
+      // Generate 1-2 positive traits
+      const numPositives = Math.floor(Math.random() * 2) + 1;
+      const selectedPositives = [];
+      
+      for (let i = 0; i < numPositives; i++) {
+        let positive;
+        do {
+          positive = positiveTraits[Math.floor(Math.random() * positiveTraits.length)];
+        } while (selectedPositives.includes(positive));
+        
+        selectedPositives.push(positive);
+        
+        const positiveElement = document.createElement('div');
+        positiveElement.className = 'reason-item';
+        positiveElement.textContent = `❤️ ${positive}`;
+        positiveElement.style.color = '#ff6b6b';
+        reasonsList.appendChild(positiveElement);
+      }
+      
+      // Change profile pictures
+      document.getElementById('person1').querySelector('img').src = `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`;
+      document.getElementById('person2').querySelector('img').src = `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`;
+      
+      // Clear result
+      resultDisplay.textContent = '';
+      splitBtn.style.display = 'inline-block';
+      newCoupleBtn.style.display = 'none';
+    }
+    
+    function decideSplit() {
+      const issuesCount = document.querySelectorAll('.reason-item').length - 
+                         document.querySelectorAll('.reason-item[style*="color: rgb(255, 107, 107)"]').length;
+      const positivesCount = document.querySelectorAll('.reason-item[style*="color: rgb(255, 107, 107)"]').length;
+      
+      // Very scientific relationship algorithm
+      const splitChance = issuesCount * 15 - positivesCount * 20;
+      const randomFactor = Math.random() * 50;
+      const shouldSplit = (splitChance + randomFactor) > 50;
+      
+      if (shouldSplit) {
+        resultDisplay.innerHTML = '💔 <strong>DIVORCE!</strong> They should definitely split up.';
+      } else {
+        resultDisplay.innerHTML = '❤️ <strong>STAY TOGETHER!</strong> They should work it out.';
+      }
+      
+      splitBtn.style.display = 'none';
+      newCoupleBtn.style.display = 'inline-block';
+    }
+    
+    // Event listeners
+    splitBtn.addEventListener('click', decideSplit);
+    newCoupleBtn.addEventListener('click', generateCouple);
+    
+    // Start first game
+    generateCouple();
+  </script>
+</body>
+</html>
