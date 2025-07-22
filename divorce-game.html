@@ -3,61 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Divorce Game | SpinFun</title>
+  <title>Divorce Negotiation Game | SpinFun</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    .couple-container {
-      display: flex;
-      justify-content: space-around;
-      margin: 30px 0;
-    }
-    
-    .person {
-      text-align: center;
-      padding: 20px;
+    .negotiation-section {
+      background: white;
+      padding: 25px;
       border-radius: 10px;
-      background: #fff9f9;
-      width: 40%;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .person img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 10px;
-      border: 3px solid #ff6b6b;
-    }
-    
-    .reasons-list {
-      text-align: left;
       margin: 20px auto;
-      max-width: 500px;
+      max-width: 800px;
+      text-align: left;
     }
     
-    .reason-item {
-      padding: 10px;
-      margin: 5px 0;
-      background: #fff;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    
-    .split-btn {
-      background: #ff6b6b;
-      font-size: 1.2rem;
-      padding: 15px 30px;
-    }
-    
-    .split-btn:hover {
-      background: #e05555;
-    }
-    
-    .result {
-      font-size: 1.5rem;
+    .negotiation-item {
       margin: 20px 0;
-      min-height: 60px;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+    
+    .negotiation-title {
+      color: #d32f2f;
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+    
+    .options-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .option {
+      background: #f5f5f5;
+      padding: 10px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .option.selected {
+      background: #5f6caf;
+      color: white;
+    }
+    
+    .option:hover {
+      background: #e0e0e0;
+    }
+    
+    .option.selected:hover {
+      background: #4a5691;
+    }
+    
+    #results-container {
+      display: none;
+      margin-top: 30px;
+    }
+    
+    .result-item {
+      margin: 15px 0;
+      padding: 15px;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    
+    .your-choice {
+      font-weight: bold;
+      color: #5f6caf;
+    }
+    
+    .correct-answer {
+      font-weight: bold;
+      color: #4caf50;
+    }
+    
+    .explanation {
+      margin-top: 5px;
+      font-style: italic;
+      color: #666;
+    }
+    
+    #submit-negotiation {
+      margin: 20px auto;
+      display: block;
+      padding: 12px 25px;
+      font-size: 1.1rem;
+    }
+    
+    .completion-message {
+      text-align: center;
+      margin: 20px 0;
+      font-size: 1.2rem;
+      color: #d32f2f;
+    }
+    
+    .progress-tracker {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .progress-step {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e0e0e0;
+    }
+    
+    .progress-step.completed {
+      background: #5f6caf;
     }
   </style>
 </head>
@@ -66,146 +123,228 @@
     <a href="index.html" class="back-btn">← Back to SpinFun</a>
     
     <div class="game-container">
-      <h1 class="game-title">Divorce Game 💔</h1>
-      <p>Should they stay together or split up? You decide!</p>
+      <h1 class="game-title">Divorce Negotiation Game 💔</h1>
+      <p>Negotiate the settlement terms before seeing the "correct" answers!</p>
       
-      <div class="couple-container">
-        <div class="person" id="person1">
-          <img src="https://i.pravatar.cc/150?img=5" alt="Person 1">
-          <h3>Alex</h3>
-          <p>Loves hiking and cats</p>
-        </div>
-        
-        <div class="person" id="person2">
-          <img src="https://i.pravatar.cc/150?img=6" alt="Person 2">
-          <h3>Jordan</h3>
-          <p>Movie buff and chef</p>
-        </div>
+      <div class="progress-tracker" id="progress-tracker"></div>
+      
+      <div class="negotiation-section">
+        <h2>Case Overview</h2>
+        <p>Alex and Jordan are getting divorced after 7 years of marriage. They have:</p>
+        <ul>
+          <li>Joint savings of $250,000</li>
+          <li>A house worth $450,000 with $200,000 remaining on the mortgage</li>
+          <li>Two cars (2018 SUV and 2020 sedan)</li>
+          <li>A dog named Max</li>
+          <li>Various investments and retirement accounts</li>
+        </ul>
+        <p>Negotiate how to split these assets:</p>
       </div>
       
-      <div class="reasons-list" id="reasons">
-        <h3>Relationship Issues:</h3>
-        <!-- Reasons will be added by JavaScript -->
+      <div id="negotiation-items">
+        <!-- Negotiation items will be added by JavaScript -->
       </div>
       
-      <div class="result" id="result"></div>
+      <button id="submit-negotiation" class="btn" disabled>See the "Correct" Answers</button>
       
-      <button id="split-btn" class="btn split-btn">Should They Split?</button>
-      <button id="new-couple-btn" class="btn" style="display: none;">New Couple</button>
+      <div id="results-container">
+        <h2 class="completion-message">Negotiation Results</h2>
+        <div id="results-content">
+          <!-- Results will be added by JavaScript -->
+        </div>
+        <button id="new-case-btn" class="btn">New Divorce Case</button>
+      </div>
     </div>
   </div>
 
   <script src="script.js"></script>
   <script>
-    // Divorce Game Logic
-    const issues = [
-      "Never puts the toilet seat down",
-      "Snoring like a chainsaw",
-      "Secretly hates your mother",
-      "Leaves dirty dishes in the sink",
-      "Has a weird obsession with garden gnomes",
-      "Still texts their ex 'just to check in'",
-      "Refuses to watch your favorite show",
-      "Borrows your clothes without asking",
-      "Says 'we need to talk' at least once a week",
-      "Has a secret Instagram account for their pet rock"
+    // Divorce Game with Negotiation
+    const negotiationItems = [
+      {
+        title: "Division of Savings",
+        question: "How should the $250,000 in joint savings be divided?",
+        options: [
+          { text: "Split 50/50", value: "equal" },
+          { text: "Alex gets 70%, Jordan 30%", value: "alex70" },
+          { text: "Jordan gets 70%, Alex 30%", value: "jordan70" },
+          { text: "Based on income contribution", value: "income" }
+        ],
+        correct: "equal",
+        explanation: "Courts typically favor equal division of liquid assets unless there are extenuating circumstances."
+      },
+      {
+        title: "Family Home",
+        question: "What should happen with the family home?",
+        options: [
+          { text: "Sell it and split proceeds", value: "sell" },
+          { text: "Alex keeps it, buys out Jordan", value: "alexKeeps" },
+          { text: "Jordan keeps it, buys out Alex", value: "jordanKeeps" },
+          { text: "Keep joint ownership temporarily", value: "joint" }
+        ],
+        correct: "sell",
+        explanation: "Courts usually prefer clean breaks. Selling is often the simplest solution."
+      },
+      {
+        title: "Vehicles",
+        question: "How should the vehicles be divided?",
+        options: [
+          { text: "Each keeps their primary vehicle", value: "primary" },
+          { text: "Sell both and split proceeds", value: "sellBoth" },
+          { text: "Alex gets both, compensates Jordan", value: "alexBoth" },
+          { text: "Jordan gets both, compensates Alex", value: "jordanBoth" }
+        ],
+        correct: "primary",
+        explanation: "People typically keep the vehicles they primarily used during marriage."
+      },
+      {
+        title: "Pet Custody",
+        question: "What should happen with Max the dog?",
+        options: [
+          { text: "Alex gets full custody", value: "alexPet" },
+          { text: "Jordan gets full custody", value: "jordanPet" },
+          { text: "Shared custody arrangement", value: "shared" },
+          { text: "Rehome the pet", value: "rehome" }
+        ],
+        correct: "shared",
+        explanation: "Courts increasingly treat pets like children in divorces, favoring shared arrangements."
+      },
+      {
+        title: "Retirement Accounts",
+        question: "How should retirement accounts be divided?",
+        options: [
+          { text: "Leave accounts as-is", value: "leave" },
+          { text: "Equal division of all accounts", value: "equalSplit" },
+          { text: "Only divide accounts opened during marriage", value: "maritalOnly" },
+          { text: "No division, keep separate", value: "separate" }
+        ],
+        correct: "maritalOnly",
+        explanation: "Typically only assets acquired during marriage are subject to division."
+      }
     ];
-    
-    const positiveTraits = [
-      "Makes you laugh every day",
-      "Always knows how to cheer you up",
-      "Brings you coffee in bed",
-      "Remembers your anniversary",
-      "Supports your dreams",
-      "Is an amazing cook",
-      "Gives the best hugs",
-      "Loves your weird quirks",
-      "Always puts you first",
-      "Makes every day an adventure"
-    ];
-    
-    const splitBtn = document.getElementById('split-btn');
-    const newCoupleBtn = document.getElementById('new-couple-btn');
-    const reasonsList = document.getElementById('reasons');
-    const resultDisplay = document.getElementById('result');
-    
-    function generateCouple() {
-      // Clear previous reasons
-      reasonsList.innerHTML = '<h3>Relationship Issues:</h3>';
+
+    const negotiationContainer = document.getElementById('negotiation-items');
+    const submitBtn = document.getElementById('submit-negotiation');
+    const resultsContainer = document.getElementById('results-container');
+    const resultsContent = document.getElementById('results-content');
+    const newCaseBtn = document.getElementById('new-case-btn');
+    const progressTracker = document.getElementById('progress-tracker');
+
+    let userChoices = {};
+    let completedItems = 0;
+
+    // Initialize the game
+    function initGame() {
+      userChoices = {};
+      completedItems = 0;
+      negotiationContainer.innerHTML = '';
+      resultsContainer.style.display = 'none';
+      submitBtn.disabled = true;
       
-      // Generate 3-5 random issues
-      const numIssues = Math.floor(Math.random() * 3) + 3;
-      const selectedIssues = [];
+      // Create progress tracker
+      progressTracker.innerHTML = '';
+      negotiationItems.forEach((_, index) => {
+        const step = document.createElement('div');
+        step.className = 'progress-step';
+        step.id = `step-${index}`;
+        progressTracker.appendChild(step);
+      });
       
-      for (let i = 0; i < numIssues; i++) {
-        let issue;
-        do {
-          issue = issues[Math.floor(Math.random() * issues.length)];
-        } while (selectedIssues.includes(issue));
+      // Create negotiation items
+      negotiationItems.forEach((item, index) => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'negotiation-item';
+        itemElement.id = `item-${index}`;
+        itemElement.innerHTML = `
+          <h3 class="negotiation-title">${item.title}</h3>
+          <p>${item.question}</p>
+          <div class="options-container" id="options-${index}"></div>
+        `;
         
-        selectedIssues.push(issue);
+        const optionsContainer = itemElement.querySelector(`#options-${index}`);
+        item.options.forEach(option => {
+          const optionElement = document.createElement('div');
+          optionElement.className = 'option';
+          optionElement.textContent = option.text;
+          optionElement.dataset.value = option.value;
+          optionElement.dataset.itemIndex = index;
+          optionElement.addEventListener('click', handleOptionSelect);
+          optionsContainer.appendChild(optionElement);
+        });
         
-        const issueElement = document.createElement('div');
-        issueElement.className = 'reason-item';
-        issueElement.textContent = `💢 ${issue}`;
-        reasonsList.appendChild(issueElement);
-      }
-      
-      // Generate 1-2 positive traits
-      const numPositives = Math.floor(Math.random() * 2) + 1;
-      const selectedPositives = [];
-      
-      for (let i = 0; i < numPositives; i++) {
-        let positive;
-        do {
-          positive = positiveTraits[Math.floor(Math.random() * positiveTraits.length)];
-        } while (selectedPositives.includes(positive));
-        
-        selectedPositives.push(positive);
-        
-        const positiveElement = document.createElement('div');
-        positiveElement.className = 'reason-item';
-        positiveElement.textContent = `❤️ ${positive}`;
-        positiveElement.style.color = '#ff6b6b';
-        reasonsList.appendChild(positiveElement);
-      }
-      
-      // Change profile pictures
-      document.getElementById('person1').querySelector('img').src = `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`;
-      document.getElementById('person2').querySelector('img').src = `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`;
-      
-      // Clear result
-      resultDisplay.textContent = '';
-      splitBtn.style.display = 'inline-block';
-      newCoupleBtn.style.display = 'none';
+        negotiationContainer.appendChild(itemElement);
+      });
     }
-    
-    function decideSplit() {
-      const issuesCount = document.querySelectorAll('.reason-item').length - 
-                         document.querySelectorAll('.reason-item[style*="color: rgb(255, 107, 107)"]').length;
-      const positivesCount = document.querySelectorAll('.reason-item[style*="color: rgb(255, 107, 107)"]').length;
+
+    // Handle option selection
+    function handleOptionSelect(e) {
+      const option = e.target;
+      const itemIndex = option.dataset.itemIndex;
+      const value = option.dataset.value;
       
-      // Very scientific relationship algorithm
-      const splitChance = issuesCount * 15 - positivesCount * 20;
-      const randomFactor = Math.random() * 50;
-      const shouldSplit = (splitChance + randomFactor) > 50;
+      // Remove selected class from all options in this item
+      const options = document.querySelectorAll(`#options-${itemIndex} .option`);
+      options.forEach(opt => opt.classList.remove('selected'));
       
-      if (shouldSplit) {
-        resultDisplay.innerHTML = '💔 <strong>DIVORCE!</strong> They should definitely split up.';
-      } else {
-        resultDisplay.innerHTML = '❤️ <strong>STAY TOGETHER!</strong> They should work it out.';
-      }
+      // Add selected class to clicked option
+      option.classList.add('selected');
       
-      splitBtn.style.display = 'none';
-      newCoupleBtn.style.display = 'inline-block';
+      // Store user choice
+      userChoices[itemIndex] = {
+        value: value,
+        text: option.textContent
+      };
+      
+      // Update progress
+      updateProgress();
     }
-    
+
+    // Update progress tracker
+    function updateProgress() {
+      completedItems = Object.keys(userChoices).length;
+      
+      // Update progress steps
+      negotiationItems.forEach((_, index) => {
+        const step = document.getElementById(`step-${index}`);
+        step.classList.toggle('completed', userChoices[index] !== undefined);
+      });
+      
+      // Enable submit button if all items completed
+      submitBtn.disabled = completedItems !== negotiationItems.length;
+    }
+
+    // Show results
+    function showResults() {
+      resultsContent.innerHTML = '';
+      
+      negotiationItems.forEach((item, index) => {
+        const userChoice = userChoices[index];
+        const resultElement = document.createElement('div');
+        resultElement.className = 'result-item';
+        
+        resultElement.innerHTML = `
+          <h4>${item.title}</h4>
+          <p>Your choice: <span class="your-choice">${userChoice.text}</span></p>
+          <p>Typical court decision: <span class="correct-answer">${
+            item.options.find(opt => opt.value === item.correct).text
+          }</span></p>
+          <p class="explanation">${item.explanation}</p>
+        `;
+        
+        resultsContent.appendChild(resultElement);
+      });
+      
+      negotiationContainer.style.display = 'none';
+      resultsContainer.style.display = 'block';
+      submitBtn.style.display = 'none';
+    }
+
     // Event listeners
-    splitBtn.addEventListener('click', decideSplit);
-    newCoupleBtn.addEventListener('click', generateCouple);
-    
-    // Start first game
-    generateCouple();
+    submitBtn.addEventListener('click', showResults);
+    newCaseBtn.addEventListener('click', initGame);
+
+    // Start the game
+    initGame();
   </script>
 </body>
 </html>
