@@ -77,6 +77,35 @@
       padding: 0 2px;
       border-radius: 2px;
     }
+    
+    #next-article-btn {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    
+    #next-article-btn.ready {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-left: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -93,9 +122,15 @@
       </div>
       
       <div class="news-article" id="news-article">
-        <h2 class="news-title" id="article-title">Loading news...</h2>
+        <h2 class="news-title" id="article-title">Today's News</h2>
         <p class="news-meta" id="article-meta">SpinFun News Network</p>
-        <div id="article-content"></div>
+        <div id="article-content">
+          <div id="loading-indicator" style="text-align: center; margin: 20px 0;">
+            <div class="loading" style="margin: 0 auto;"></div>
+            <p>Generating today's news...</p>
+          </div>
+          <div id="article-text" class="hidden"></div>
+        </div>
       </div>
       
       <div class="word-finder-container">
@@ -104,7 +139,7 @@
       </div>
       
       <div class="controls">
-        <button id="hint-btn" class="btn">Hint (Highlight All)</button>
+        <button id="hint-btn" class="btn">Get Hint</button>
         <button id="next-article-btn" class="btn">Next Article →</button>
       </div>
     </div>
@@ -112,31 +147,74 @@
 
   <script src="script.js"></script>
   <script>
-    // News Word Finder Game
-    const newsTemplates = [
-      {
-        title: "Local Man Discovers Ancient Treasure in Backyard",
-        meta: "By Jane Smith | Published today",
-        content: "A {construction} worker from {Springfield} unearthed what appears to be a {medieval} {artifact} while digging a {swimming} pool. The {discovery} has {archeologists} buzzing with {excitement} as they {examine} the {mysterious} objects. Local {authorities} have {cordoned} off the area while {experts} {investigate} further."
-      },
-      {
-        title: "Scientists Announce Breakthrough in Renewable Energy",
-        meta: "By David Johnson | Published yesterday",
-        content: "A team of {researchers} at {Stanford} University has {developed} a new {technology} that could {revolutionize} {solar} power {storage}. The {innovation} centers around a {nanomaterial} that {dramatically} {improves} {battery} {efficiency}. {Industry} leaders are {calling} this a {gamechanger} for {clean} energy."
-      },
-      {
-        title: "Mysterious Lights Spotted Over Downtown",
-        meta: "By Lisa Chen | Published 2 hours ago",
-        content: "Dozens of {residents} reported seeing {strange} {lights} in the {night} sky last {evening}. The {phenomenon}, which {lasted} for nearly 20 {minutes}, has {sparked} intense {debate} on {social} media. While some {witnesses} {insist} it was {aliens}, {officials} suggest it may have been a {military} {exercise} or {atmospheric} {conditions}."
-      },
-      {
-        title: "New Study Reveals Benefits of Chocolate",
-        meta: "By Michael Brown | Published this morning",
-        content: "In what may be the best {medical} news all {year}, {scientists} have {confirmed} that {dark} chocolate can {improve} {memory} and {cognitive} {function}. The {research}, {conducted} at {Harvard}, {involved} over 1,000 {participants}. {Experts} {caution} that {moderation} is still {key}, but {recommend} a small {daily} {portion} for {optimal} {health} benefits."
+    // ======================
+    // MARKOV CHAIN GENERATOR
+    // ======================
+    class MarkovGenerator {
+      constructor() {
+        this.chain = {};
+        this.startWords = [];
+        this.endWords = [];
       }
-    ];
+      
+      train(text) {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        
+        sentences.forEach(sentence => {
+          const words = sentence.trim().split(/\s+/);
+          if (words.length < 3) return;
+          
+          // Add starting word
+          this.startWords.push(words[0]);
+          
+          // Add transitions
+          for (let i = 0; i < words.length - 1; i++) {
+            const current = words[i].toLowerCase();
+            const next = words[i + 1].toLowerCase();
+            
+            if (!this.chain[current]) {
+              this.chain[current] = [];
+            }
+            this.chain[current].push(next);
+          }
+          
+          // Mark ending word
+          this.endWords.push(words[words.length - 1].toLowerCase());
+        });
+      }
+      
+      generateSentence(minLength = 5) {
+        let sentence = [];
+        let current = this.startWords[Math.floor(Math.random() * this.startWords.length)];
+        sentence.push(current);
+        
+        while (true) {
+          const nextOptions = this.chain[current.toLowerCase()];
+          if (!nextOptions || nextOptions.length === 0) break;
+          
+          current = nextOptions[Math.floor(Math.random() * nextOptions.length)];
+          sentence.push(current);
+          
+          // Random chance to stop at end of sentence
+          const shouldStop = this.endWords.includes(current.toLowerCase()) && 
+                            sentence.length >= minLength;
+          if (shouldStop || sentence.length > 15) break;
+        }
+        
+        // Capitalize first letter
+        if (sentence.length > 0) {
+          sentence[0] = sentence[0].charAt(0).toUpperCase() + sentence[0].slice(1);
+        }
+        
+        return sentence.join(' ') + '.';
+      }
+    }
 
+    // ======================
+    // GAME LOGIC
+    // ======================
     const articleContent = document.getElementById('article-content');
+    const articleText = document.getElementById('article-text');
     const articleTitle = document.getElementById('article-title');
     const articleMeta = document.getElementById('article-meta');
     const wordsToFindContainer = document.getElementById('words-to-find');
@@ -144,61 +222,129 @@
     const hintBtn = document.getElementById('hint-btn');
     const wordsFoundDisplay = document.getElementById('words-found');
     const articlesCompletedDisplay = document.getElementById('articles-completed');
+    const loadingIndicator = document.getElementById('loading-indicator');
 
     let currentWords = [];
     let foundWords = [];
     let wordsFound = 0;
     let articlesCompleted = 0;
-    let currentArticle = {};
+    let wordElements = [];
+    let markov = new MarkovGenerator();
+
+    // Training data for Markov generator
+    const trainingTexts = [
+      "Scientists discovered a new species of butterfly in the Amazon rainforest. The colorful insects have unique wing patterns.",
+      "A breakthrough in quantum computing was announced today. Researchers achieved quantum supremacy with a 128-qubit processor.",
+      "The city council approved plans for a new downtown park. Construction will begin next spring and include playgrounds and walking trails.",
+      "Local chefs are experimenting with plant-based meat alternatives. The new recipes mimic the taste and texture of traditional meat.",
+      "Astronomers detected unusual radio signals from a nearby star system. The mysterious pulses occur at regular intervals.",
+      "A rare solar eclipse will be visible next month. Skywatchers should prepare their viewing equipment in advance.",
+      "The tech company unveiled its latest smartphone model. The device features an improved camera and longer battery life.",
+      "Medical researchers identified a potential new treatment for arthritis. Clinical trials showed promising results in pain reduction.",
+      "Environmentalists are concerned about declining bee populations. Pollinators play a crucial role in food production.",
+      "The museum opened a new exhibit on ancient civilizations. Artifacts from Egypt, Greece, and Rome are on display."
+    ];
 
     // Initialize the game
     function initGame() {
+      // Train the Markov generator
+      trainingTexts.forEach(text => markov.train(text));
       generateNewArticle();
       updateStats();
     }
 
     // Generate a new random article
     function generateNewArticle() {
+      showLoading(true);
       foundWords = [];
-      currentArticle = newsTemplates[Math.floor(Math.random() * newsTemplates.length)];
+      nextArticleBtn.classList.remove('ready');
       
-      // Extract words to find (enclosed in {})
-      const contentWithPlaceholders = currentArticle.content;
-      currentWords = [];
+      // Generate a title (3-5 words)
+      const titleWordCount = Math.floor(Math.random() * 3) + 3;
+      let title = "";
+      for (let i = 0; i < titleWordCount; i++) {
+        title += trainingTexts[Math.floor(Math.random() * trainingTexts.length)]
+          .split(' ')[0] + ' ';
+      }
+      title = title.trim();
       
-      // Process content to extract words and create spans
-      let processedContent = contentWithPlaceholders;
-      const wordRegex = /\{([^}]+)\}/g;
-      let match;
-      
-      while ((match = wordRegex.exec(contentWithPlaceholders)) !== null) {
-        const word = match[1];
-        currentWords.push(word.toLowerCase());
-        processedContent = processedContent.replace(
-          `{${word}}`, 
-          `<span class="word-highlight" data-word="${word.toLowerCase()}">${word}</span>`
-        );
+      // Generate article content (3-5 sentences)
+      const paragraphCount = Math.floor(Math.random() * 3) + 3;
+      let content = "";
+      for (let i = 0; i < paragraphCount; i++) {
+        const sentenceCount = Math.floor(Math.random() * 3) + 2;
+        let paragraph = "";
+        for (let j = 0; j < sentenceCount; j++) {
+          paragraph += markov.generateSentence() + ' ';
+        }
+        content += `<p>${paragraph}</p>`;
       }
       
+      // Select words to find (nouns from the content)
+      const allWords = content.split(/\s+/);
+      const nouns = allWords.filter(word => 
+        word.length > 5 && 
+        !word.match(/[.,!?]/) && 
+        word === word.toLowerCase() &&
+        Math.random() > 0.7
+      ).slice(0, 8); // Get up to 8 words
+      
+      // Make sure we have enough words
+      currentWords = nouns.length >= 5 ? nouns : [
+        'discovered', 'rainforest', 'breakthrough', 
+        'research', 'approved', 'construction', 
+        'experimenting', 'astronomers', 'eclipse'
+      ].sort(() => 0.5 - Math.random()).slice(0, 5);
+      
+      // Process content to highlight words
+      wordElements = [];
+      let processedContent = content;
+      
+      // Highlight each word in the content
+      currentWords.forEach(word => {
+        const regex = new RegExp(`\\b${word}\\b`, 'gi');
+        processedContent = processedContent.replace(regex, 
+          match => `<span class="word-highlight" data-word="${word.toLowerCase()}">${match}</span>`
+        );
+      });
+      
       // Update DOM
-      articleTitle.textContent = currentArticle.title;
-      articleMeta.textContent = currentArticle.meta;
-      articleContent.innerHTML = processedContent;
+      articleTitle.textContent = title;
+      articleMeta.textContent = `SpinFun News Network | Today`;
+      articleText.innerHTML = processedContent;
       
       // Create word finder UI
       wordsToFindContainer.innerHTML = '';
       currentWords.forEach(word => {
         const wordElement = document.createElement('div');
         wordElement.className = 'word-to-find';
-        wordElement.textContent = word;
-        wordElement.id = `word-${word}`;
+        wordElement.textContent = word.toLowerCase();
+        wordElement.id = `word-${word.toLowerCase()}`;
         wordsToFindContainer.appendChild(wordElement);
       });
       
       // Add click handlers to highlighted words
-      document.querySelectorAll('.word-highlight').forEach(highlight => {
+      wordElements = Array.from(document.querySelectorAll('.word-highlight'));
+      wordElements.forEach(highlight => {
         highlight.addEventListener('click', handleWordClick);
       });
+      
+      // Show content
+      loadingIndicator.classList.add('hidden');
+      articleText.classList.remove('hidden');
+      showLoading(false);
+    }
+
+    function showLoading(show) {
+      if (show) {
+        loadingIndicator.classList.remove('hidden');
+        articleText.classList.add('hidden');
+        hintBtn.disabled = true;
+      } else {
+        loadingIndicator.classList.add('hidden');
+        articleText.classList.remove('hidden');
+        hintBtn.disabled = false;
+      }
     }
 
     // Handle when a word is clicked
@@ -215,29 +361,53 @@
         
         // Check if all words found
         if (foundWords.length === currentWords.length) {
-          setTimeout(() => {
-            alert('Great job! You found all the words in this article!');
-            nextArticle();
-          }, 500);
+          nextArticleBtn.classList.add('ready');
         }
       }
     }
 
-    // Highlight all words
-    function highlightAllWords() {
-      document.querySelectorAll('.word-highlight').forEach(highlight => {
-        highlight.classList.add('highlight');
-        setTimeout(() => {
-          highlight.classList.remove('highlight');
-        }, 2000);
-      });
+    // Give a hint (highlight one random occurrence of a random unfound word)
+    function giveHint() {
+      const unfoundWords = currentWords.filter(word => 
+        !foundWords.includes(word.toLowerCase()) &&
+        wordElements.some(el => 
+          el.getAttribute('data-word') === word.toLowerCase() && 
+          !el.classList.contains('found-word')
+        )
+      );
+      
+      if (unfoundWords.length > 0) {
+        // Choose a random unfound word
+        const randomWord = unfoundWords[Math.floor(Math.random() * unfoundWords.length)].toLowerCase();
+        
+        // Find all instances of this word
+        const wordInstances = wordElements.filter(el => 
+          el.getAttribute('data-word') === randomWord && 
+          !el.classList.contains('found-word')
+        );
+        
+        if (wordInstances.length > 0) {
+          // Highlight a random instance
+          const randomInstance = wordInstances[Math.floor(Math.random() * wordInstances.length)];
+          randomInstance.classList.add('highlight');
+          
+          // Remove highlight after 2 seconds
+          setTimeout(() => {
+            randomInstance.classList.remove('highlight');
+          }, 2000);
+        }
+      } else {
+        alert("You've already found all the words!");
+      }
     }
 
     // Move to next article
     function nextArticle() {
-      articlesCompleted++;
-      updateStats();
-      generateNewArticle();
+      if (foundWords.length === currentWords.length) {
+        articlesCompleted++;
+        updateStats();
+        generateNewArticle();
+      }
     }
 
     // Update statistics
@@ -248,7 +418,7 @@
 
     // Event listeners
     nextArticleBtn.addEventListener('click', nextArticle);
-    hintBtn.addEventListener('click', highlightAllWords);
+    hintBtn.addEventListener('click', giveHint);
 
     // Start the game
     initGame();
