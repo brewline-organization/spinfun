@@ -3,137 +3,254 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Find the Word | SpinFun</title>
+  <title>Find The Word | SpinFun</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .news-article {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin: 20px auto;
+      max-width: 800px;
+      text-align: left;
+      line-height: 1.6;
+    }
+    
+    .news-title {
+      color: #d32f2f;
+      margin-top: 0;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+    
+    .news-meta {
+      color: #666;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+    
+    .word-finder-container {
+      margin: 30px auto;
+      max-width: 800px;
+    }
+    
+    .words-to-find {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .word-to-find {
+      background: #5f6caf;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+    }
+    
+    .word-to-find.found {
+      background: #4caf50;
+      text-decoration: line-through;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+    
+    .stats {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .highlight {
+      background-color: #ffeb3b;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+    
+    .found-word {
+      background-color: #a5d6a7;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <a href="index.html" class="back-btn">← Back to SpinFun</a>
     
     <div class="game-container">
-      <h1 class="game-title">Find the Word 🔍</h1>
-      <p>Guess the hidden word one letter at a time!</p>
+      <h1 class="game-title">Find The Word 📰</h1>
+      <p>Find all the highlighted words in the news article!</p>
       
-      <div id="word-display" class="word-display"></div>
-      
-      <div class="game-controls">
-        <input type="text" id="letter-input" class="input-field" maxlength="1" placeholder="Enter a letter">
-        <button id="guess-btn" class="btn">Guess</button>
+      <div class="stats">
+        <p>Words found: <span id="words-found">0</span></p>
+        <p>Articles completed: <span id="articles-completed">0</span></p>
       </div>
       
-      <div id="message" class="message"></div>
-      <div id="guessed-letters" class="guessed-letters"></div>
-      
-      <div class="game-stats">
-        <p>Guesses left: <span id="guesses-left">6</span></p>
-        <p>Score: <span id="score">0</span></p>
+      <div class="news-article" id="news-article">
+        <h2 class="news-title" id="article-title">Loading news...</h2>
+        <p class="news-meta" id="article-meta">SpinFun News Network</p>
+        <div id="article-content"></div>
       </div>
       
-      <button id="new-game-btn" class="btn" style="display: none;">New Game</button>
+      <div class="word-finder-container">
+        <h3>Find these words:</h3>
+        <div class="words-to-find" id="words-to-find"></div>
+      </div>
+      
+      <div class="controls">
+        <button id="hint-btn" class="btn">Hint (Highlight All)</button>
+        <button id="next-article-btn" class="btn">Next Article →</button>
+      </div>
     </div>
   </div>
 
   <script src="script.js"></script>
   <script>
-    // Word Game Logic
-    const words = ['SPINFUN', 'GAMING', 'DEVELOPER', 'JAVASCRIPT', 'HAPPY', 'FUNNY', 'CREATIVE'];
-    let currentWord = '';
-    let guessedLetters = [];
-    let guessesLeft = 6;
-    let score = 0;
-    
-    const wordDisplay = document.getElementById('word-display');
-    const letterInput = document.getElementById('letter-input');
-    const guessBtn = document.getElementById('guess-btn');
-    const message = document.getElementById('message');
-    const guessedLettersDisplay = document.getElementById('guessed-letters');
-    const guessesLeftDisplay = document.getElementById('guesses-left');
-    const scoreDisplay = document.getElementById('score');
-    const newGameBtn = document.getElementById('new-game-btn');
-    
-    // Initialize game
+    // News Word Finder Game
+    const newsTemplates = [
+      {
+        title: "Local Man Discovers Ancient Treasure in Backyard",
+        meta: "By Jane Smith | Published today",
+        content: "A {construction} worker from {Springfield} unearthed what appears to be a {medieval} {artifact} while digging a {swimming} pool. The {discovery} has {archeologists} buzzing with {excitement} as they {examine} the {mysterious} objects. Local {authorities} have {cordoned} off the area while {experts} {investigate} further."
+      },
+      {
+        title: "Scientists Announce Breakthrough in Renewable Energy",
+        meta: "By David Johnson | Published yesterday",
+        content: "A team of {researchers} at {Stanford} University has {developed} a new {technology} that could {revolutionize} {solar} power {storage}. The {innovation} centers around a {nanomaterial} that {dramatically} {improves} {battery} {efficiency}. {Industry} leaders are {calling} this a {gamechanger} for {clean} energy."
+      },
+      {
+        title: "Mysterious Lights Spotted Over Downtown",
+        meta: "By Lisa Chen | Published 2 hours ago",
+        content: "Dozens of {residents} reported seeing {strange} {lights} in the {night} sky last {evening}. The {phenomenon}, which {lasted} for nearly 20 {minutes}, has {sparked} intense {debate} on {social} media. While some {witnesses} {insist} it was {aliens}, {officials} suggest it may have been a {military} {exercise} or {atmospheric} {conditions}."
+      },
+      {
+        title: "New Study Reveals Benefits of Chocolate",
+        meta: "By Michael Brown | Published this morning",
+        content: "In what may be the best {medical} news all {year}, {scientists} have {confirmed} that {dark} chocolate can {improve} {memory} and {cognitive} {function}. The {research}, {conducted} at {Harvard}, {involved} over 1,000 {participants}. {Experts} {caution} that {moderation} is still {key}, but {recommend} a small {daily} {portion} for {optimal} {health} benefits."
+      }
+    ];
+
+    const articleContent = document.getElementById('article-content');
+    const articleTitle = document.getElementById('article-title');
+    const articleMeta = document.getElementById('article-meta');
+    const wordsToFindContainer = document.getElementById('words-to-find');
+    const nextArticleBtn = document.getElementById('next-article-btn');
+    const hintBtn = document.getElementById('hint-btn');
+    const wordsFoundDisplay = document.getElementById('words-found');
+    const articlesCompletedDisplay = document.getElementById('articles-completed');
+
+    let currentWords = [];
+    let foundWords = [];
+    let wordsFound = 0;
+    let articlesCompleted = 0;
+    let currentArticle = {};
+
+    // Initialize the game
     function initGame() {
-      currentWord = words[Math.floor(Math.random() * words.length)];
-      guessedLetters = [];
-      guessesLeft = 6;
-      
-      wordDisplay.innerHTML = currentWord.split('').map(letter => 
-        `<span class="letter">_</span>`
-      ).join(' ');
-      
-      message.textContent = '';
-      guessedLettersDisplay.textContent = '';
-      guessesLeftDisplay.textContent = guessesLeft;
-      newGameBtn.style.display = 'none';
-      letterInput.disabled = false;
-      guessBtn.disabled = false;
+      generateNewArticle();
+      updateStats();
     }
-    
-    // Update word display
-    function updateWordDisplay() {
-      wordDisplay.innerHTML = currentWord.split('').map(letter => 
-        guessedLetters.includes(letter) ? 
-          `<span class="letter">${letter}</span>` : 
-          `<span class="letter">_</span>`
-      ).join(' ');
-    }
-    
-    // Check if player won
-    function checkWin() {
-      return currentWord.split('').every(letter => guessedLetters.includes(letter));
-    }
-    
-    // Handle guess
-    function handleGuess() {
-      const letter = letterInput.value.toUpperCase();
-      letterInput.value = '';
+
+    // Generate a new random article
+    function generateNewArticle() {
+      foundWords = [];
+      currentArticle = newsTemplates[Math.floor(Math.random() * newsTemplates.length)];
       
-      if (!letter.match(/[A-Z]/)) {
-        message.textContent = 'Please enter a valid letter!';
-        return;
+      // Extract words to find (enclosed in {})
+      const contentWithPlaceholders = currentArticle.content;
+      currentWords = [];
+      
+      // Process content to extract words and create spans
+      let processedContent = contentWithPlaceholders;
+      const wordRegex = /\{([^}]+)\}/g;
+      let match;
+      
+      while ((match = wordRegex.exec(contentWithPlaceholders)) !== null) {
+        const word = match[1];
+        currentWords.push(word.toLowerCase());
+        processedContent = processedContent.replace(
+          `{${word}}`, 
+          `<span class="word-highlight" data-word="${word.toLowerCase()}">${word}</span>`
+        );
       }
       
-      if (guessedLetters.includes(letter)) {
-        message.textContent = `You already guessed ${letter}!`;
-        return;
-      }
+      // Update DOM
+      articleTitle.textContent = currentArticle.title;
+      articleMeta.textContent = currentArticle.meta;
+      articleContent.innerHTML = processedContent;
       
-      guessedLetters.push(letter);
-      guessedLettersDisplay.textContent = `Guessed letters: ${guessedLetters.join(', ')}`;
+      // Create word finder UI
+      wordsToFindContainer.innerHTML = '';
+      currentWords.forEach(word => {
+        const wordElement = document.createElement('div');
+        wordElement.className = 'word-to-find';
+        wordElement.textContent = word;
+        wordElement.id = `word-${word}`;
+        wordsToFindContainer.appendChild(wordElement);
+      });
       
-      if (currentWord.includes(letter)) {
-        message.textContent = `Good guess! ${letter} is in the word.`;
-      } else {
-        message.textContent = `Oops! ${letter} is not in the word.`;
-        guessesLeft--;
-        guessesLeftDisplay.textContent = guessesLeft;
-      }
+      // Add click handlers to highlighted words
+      document.querySelectorAll('.word-highlight').forEach(highlight => {
+        highlight.addEventListener('click', handleWordClick);
+      });
+    }
+
+    // Handle when a word is clicked
+    function handleWordClick(e) {
+      const wordElement = e.target;
+      const word = wordElement.getAttribute('data-word');
       
-      updateWordDisplay();
-      
-      if (checkWin()) {
-        message.textContent = 'Congratulations! You won!';
-        score += guessesLeft * 10;
-        scoreDisplay.textContent = score;
-        newGameBtn.style.display = 'inline-block';
-        letterInput.disabled = true;
-        guessBtn.disabled = true;
-      } else if (guessesLeft <= 0) {
-        message.textContent = `Game over! The word was ${currentWord}.`;
-        newGameBtn.style.display = 'inline-block';
-        letterInput.disabled = true;
-        guessBtn.disabled = true;
+      if (!foundWords.includes(word)) {
+        foundWords.push(word);
+        wordElement.classList.add('found-word');
+        document.getElementById(`word-${word}`).classList.add('found');
+        wordsFound++;
+        updateStats();
+        
+        // Check if all words found
+        if (foundWords.length === currentWords.length) {
+          setTimeout(() => {
+            alert('Great job! You found all the words in this article!');
+            nextArticle();
+          }, 500);
+        }
       }
     }
-    
+
+    // Highlight all words
+    function highlightAllWords() {
+      document.querySelectorAll('.word-highlight').forEach(highlight => {
+        highlight.classList.add('highlight');
+        setTimeout(() => {
+          highlight.classList.remove('highlight');
+        }, 2000);
+      });
+    }
+
+    // Move to next article
+    function nextArticle() {
+      articlesCompleted++;
+      updateStats();
+      generateNewArticle();
+    }
+
+    // Update statistics
+    function updateStats() {
+      wordsFoundDisplay.textContent = wordsFound;
+      articlesCompletedDisplay.textContent = articlesCompleted;
+    }
+
     // Event listeners
-    guessBtn.addEventListener('click', handleGuess);
-    letterInput.addEventListener('keyup', (e) => {
-      if (e.key === 'Enter') handleGuess();
-    });
-    newGameBtn.addEventListener('click', initGame);
-    
-    // Start first game
+    nextArticleBtn.addEventListener('click', nextArticle);
+    hintBtn.addEventListener('click', highlightAllWords);
+
+    // Start the game
     initGame();
   </script>
 </body>
