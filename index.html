@@ -7,22 +7,22 @@
   <link rel="stylesheet" href="styles.css">
   <style>
     /* Add these styles to your existing styles.css or keep them here */
-    .title {
+    .title-container {
       position: relative;
       margin-bottom: 40px;
+      min-height: 100px;
     }
     
-    .emoji-container {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 10px;
-      flex-wrap: wrap;
+    .title {
+      position: relative;
+      z-index: 2;
     }
     
     .emoji {
+      position: absolute;
       font-size: 1.5rem;
       animation: float 3s ease-in-out infinite;
+      z-index: 1;
     }
     
     @keyframes float {
@@ -42,17 +42,30 @@
       font-size: 1.2rem;
       margin-top: 5px;
     }
+    
+    .back-btn {
+      display: inline-block;
+      padding: 8px 15px;
+      background: #f0f0f0;
+      border-radius: 20px;
+      text-decoration: none;
+      color: #333;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+    
+    .back-btn:hover {
+      background: #e0e0e0;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Title with emojis below -->
-    <h1 class="title">SpinFun</h1>
-    <div class="emoji-container" id="emoji-container">
-      <span>🎮</span>
-      <span>✨</span>
-      <span>😂</span>
-      <span>🔥</span>
+    <!-- Title with floating emojis around -->
+    <div class="title-container">
+      <h1 class="title">SpinFun</h1>
+      <!-- Emojis will be added by JavaScript -->
     </div>
     
     <p class="subtitle">Only fun people allowed >.<</p>
@@ -70,7 +83,7 @@
       </a>
       
       <a href="truth-or-dare.html" class="game-card">
-        <h3>Truth or Dare 🎲</h3>
+        <h3>Truth or Dare �</h3>
         <p>Digital version of the classic</p>
       </a>
     </div>
@@ -99,22 +112,49 @@
     </footer>
   </div>
 
-  <script src="script.js"></script>
   <script>
-    // Add random emojis below the title
+    // Add floating emojis around the title
     document.addEventListener('DOMContentLoaded', () => {
-      const container = document.getElementById('emoji-container');
-      const emojis = ['🎲', '🤪', '🎯', '🍕', '👾', '💥', '🐱', '🌈', '🎉'];
+      const container = document.querySelector('.title-container');
+      const emojis = ['🎮', '✨', '😂', '🔥', '🎲', '🤪', '🎯', '🍕', '👾', '💥', '🐱', '🌈', '🎉'];
+      const titleRect = document.querySelector('.title').getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
       
-      // Clear default emojis
-      container.innerHTML = '';
-      
-      // Add 8 random emojis with animation delays
+      // Position emojis around but not covering the title text
       for (let i = 0; i < 8; i++) {
         const emoji = document.createElement('span');
         emoji.className = 'emoji';
         emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
         emoji.style.animationDelay = `${i * 0.2}s`;
+        
+        // Position randomly around the title but not overlapping it
+        let left, top;
+        const padding = 20;
+        
+        // Randomly choose which side of the title to place the emoji
+        const side = Math.floor(Math.random() * 4);
+        
+        switch(side) {
+          case 0: // Above
+            left = Math.random() * containerRect.width;
+            top = Math.random() * padding;
+            break;
+          case 1: // Right
+            left = titleRect.right + Math.random() * padding;
+            top = Math.random() * containerRect.height;
+            break;
+          case 2: // Below
+            left = Math.random() * containerRect.width;
+            top = titleRect.bottom + Math.random() * padding;
+            break;
+          case 3: // Left
+            left = Math.random() * (titleRect.left - padding);
+            top = Math.random() * containerRect.height;
+            break;
+        }
+        
+        emoji.style.left = `${left}px`;
+        emoji.style.top = `${top}px`;
         container.appendChild(emoji);
       }
     });
