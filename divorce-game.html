@@ -238,8 +238,10 @@
       userChoices = {};
       completedItems = 0;
       negotiationContainer.innerHTML = '';
+      negotiationContainer.style.display = 'block'; // Make sure it's visible
       resultsContainer.style.display = 'none';
       submitBtn.disabled = true;
+      submitBtn.style.display = 'block'; // Make sure it's visible
       
       // Create progress tracker
       progressTracker.innerHTML = '';
