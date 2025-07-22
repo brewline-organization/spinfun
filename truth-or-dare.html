@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truth or Dare | SpinFun</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .game-container {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      margin: 20px 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .challenge {
+      font-size: 1.5rem;
+      margin: 20px 0;
+    }
+    
+    .type {
+      font-weight: bold;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    
+    .truth {
+      color: #4a6baf;
+    }
+    
+    .dare {
+      color: #d32f2f;
+    }
+    
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .btn {
+      padding: 12px 25px;
+      font-size: 1.1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-truth {
+      background: #4a6baf;
+      color: white;
+    }
+    
+    .btn-dare {
+      background: #d32f2f;
+      color: white;
+    }
+    
+    .btn-random {
+      background: #4caf50;
+      color: white;
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .players {
+      margin: 20px 0;
+    }
+    
+    .player-input {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      margin-right: 10px;
+    }
+    
+    .player-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 15px 0;
+    }
+    
+    .player-tag {
+      background: #f0f0f0;
+      padding: 5px 15px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .remove-player {
+      margin-left: 8px;
+      cursor: pointer;
+      color: #999;
+    }
+    
+    .settings {
+      margin: 20px 0;
+      text-align: left;
+    }
+    
+    .difficulty {
+      display: flex;
+      gap: 15px;
+      margin: 10px 0;
+    }
+    
+    .difficulty-option {
+      padding: 8px 15px;
+      border-radius: 20px;
+      background: #f0f0f0;
+      cursor: pointer;
+    }
+    
+    .difficulty-option.selected {
+      background: #4a6baf;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">← Back to SpinFun</a>
+    
+    <div class="game-container">
+      <h1 class="game-title">Truth or Dare 🎲</h1>
+      <p>The classic game - digital edition!</p>
+      
+      <div class="players">
+        <h3>Players</h3>
+        <input type="text" class="player-input" placeholder="Player name">
+        <button class="btn" id="add-player">Add Player</button>
+        <div class="player-list" id="player-list"></div>
+      </div>
+      
+      <div class="settings">
+        <h3>Difficulty</h3>
+        <div class="difficulty">
+          <div class="difficulty-option selected" data-level="easy">Easy</div>
+          <div class="difficulty-option" data-level="medium">Medium</div>
+          <div class="difficulty-option" data-level="hard">Hard</div>
+        </div>
+      </div>
+      
+      <div class="buttons">
+        <button class="btn btn-truth" id="truth-btn">Truth</button>
+        <button class="btn btn-dare" id="dare-btn">Dare</button>
+        <button class="btn btn-random" id="random-btn">Random</button>
+      </div>
+      
+      <div class="card">
+        <div id="challenge-container">
+          <p>Click a button above to get started!</p>
+        </div>
+      </div>
+      
+      <div class="current-player" id="current-player"></div>
+    </div>
+  </div>
+
+  <script>
+    // Truth or Dare Game
+    const truths = {
+      easy: [
+        "What's your most embarrassing childhood memory?",
+        "Have you ever cheated on a test?",
+        "What's your weirdest habit?",
+        "What's the silliest thing you've ever cried about?",
+        "Have you ever pretended to like a gift you hated?"
+      ],
+      medium: [
+        "What's the most illegal thing you've ever done?",
+        "Have you ever had a crush on a friend's partner?",
+        "What's your biggest regret?",
+        "What's the most selfish thing you've ever done?",
+        "Have you ever lied to get out of trouble?"
+      ],
+      hard: [
+        "What's something you've done that you hope nobody ever finds out about?",
+        "Have you ever betrayed someone's trust in a major way?",
+        "What's the worst thing you've ever said to someone?",
+        "Have you ever stolen something valuable?",
+        "What's something you would never admit to your family?"
+      ]
+    };
+
+    const dares = {
+      easy: [
+        "Do your best impression of a celebrity",
+        "Sing the chorus of your favorite song right now",
+        "Let the group choose an embarrassing social media post for you to make",
+        "Dance with no music for 30 seconds",
+        "Wear your clothes inside out for the next round"
+      ],
+      medium: [
+        "Call a friend and sing them happy birthday (it's not their birthday)",
+        "Let someone else style your hair however they want",
+        "Eat a spoonful of a condiment you dislike",
+        "Text your crush saying 'I know what you did'",
+        "Let the group choose 3 items from your phone to delete"
+      ],
+      hard: [
+        "Post an embarrassing childhood photo on social media",
+        "Call a random number and try to sell them something",
+        "Go outside and shout something embarrassing",
+        "Let the group search your browser history",
+        "Text your ex something nice"
+      ]
+    };
+
+    const playerInput = document.querySelector('.player-input');
+    const addPlayerBtn = document.getElementById('add-player');
+    const playerList = document.getElementById('player-list');
+    const truthBtn = document.getElementById('truth-btn');
+    const dareBtn = document.getElementById('dare-btn');
+    const randomBtn = document.getElementById('random-btn');
+    const challengeContainer = document.getElementById('challenge-container');
+    const currentPlayerEl = document.getElementById('current-player');
+    const difficultyOptions = document.querySelectorAll('.difficulty-option');
+
+    let players = [];
+    let currentPlayerIndex = 0;
+    let difficulty = 'easy';
+
+    // Set difficulty
+    difficultyOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        difficultyOptions.forEach(opt => opt.classList.remove('selected'));
+        option.classList.add('selected');
+        difficulty = option.dataset.level;
+      });
+    });
+
+    // Add player
+    addPlayerBtn.addEventListener('click', () => {
+      const name = playerInput.value.trim();
+      if (name && !players.includes(name)) {
+        players.push(name);
+        updatePlayerList();
+        playerInput.value = '';
+      }
+    });
+
+    // Remove player
+    playerList.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-player')) {
+        const playerName = e.target.parentElement.textContent.replace('×', '').trim();
+        players = players.filter(p => p !== playerName);
+        updatePlayerList();
+      }
+    });
+
+    // Update player list display
+    function updatePlayerList() {
+      playerList.innerHTML = '';
+      players.forEach(player => {
+        const tag = document.createElement('div');
+        tag.className = 'player-tag';
+        tag.innerHTML = `${player} <span class="remove-player">×</span>`;
+        playerList.appendChild(tag);
+      });
+    }
+
+    // Get random player
+    function getRandomPlayer() {
+      if (players.length === 0) return null;
+      currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+      return players[currentPlayerIndex];
+    }
+
+    // Display challenge
+    function displayChallenge(type, text) {
+      const player = getRandomPlayer();
+      challengeContainer.innerHTML = `
+        <div class="type ${type}">${type.toUpperCase()}</div>
+        <div class="challenge">${text}</div>
+        ${player ? `<p>For: <strong>${player}</strong></p>` : ''}
+      `;
+      
+      if (player) {
+        currentPlayerEl.textContent = `Current player: ${player}`;
+      } else {
+        currentPlayerEl.textContent = 'Add players to direct challenges!';
+      }
+    }
+
+    // Event listeners for buttons
+    truthBtn.addEventListener('click', () => {
+      const randomTruth = truths[difficulty][Math.floor(Math.random() * truths[difficulty].length)];
+      displayChallenge('truth', randomTruth);
+    });
+
+    dareBtn.addEventListener('click', () => {
+      const randomDare = dares[difficulty][Math.floor(Math.random() * dares[difficulty].length)];
+      displayChallenge('dare', randomDare);
+    });
+
+    randomBtn.addEventListener('click', () => {
+      const isTruth = Math.random() > 0.5;
+      if (isTruth) {
+        const randomTruth = truths[difficulty][Math.floor(Math.random() * truths[difficulty].length)];
+        displayChallenge('truth', randomTruth);
+      } else {
+        const randomDare = dares[difficulty][Math.floor(Math.random() * dares[difficulty].length)];
+        displayChallenge('dare', randomDare);
+      }
+    });
+
+    // Allow adding players with Enter key
+    playerInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        addPlayerBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
